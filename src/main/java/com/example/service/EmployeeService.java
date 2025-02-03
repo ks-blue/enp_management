@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.domain.Employee;
 import com.example.repository.EmployeeRepository;
 
+import jakarta.servlet.http.HttpSession;
+
 /**
  * 従業員情報を操作するサービス.
  * 
@@ -21,6 +23,20 @@ public class EmployeeService {
 
 	@Autowired
 	private EmployeeRepository employeeRepository;
+//
+	@Autowired
+	private HttpSession session;
+
+
+public Employee login(String mailAddress, String password){
+	Employee employee = employeeRepository.findByMailAddressAndPassword(mailAddress, password);
+	if (employee != null) {
+		session.setAttribute("loggedInUser", employee);
+	}
+	return employee;
+
+}
+//
 
 	/**
 	 * 従業員情報を全件取得します.

@@ -83,4 +83,18 @@ public class EmployeeRepository {
 		String updateSql = "UPDATE employees SET dependents_count=:dependentsCount WHERE id=:id";
 		template.update(updateSql, param);
 	}
+	
+
+	//
+	public Employee findByMailAddressAndPassword(String mailAddress, String password) {
+		String sql = "SELECT * FROM employees WHERE mail_address = :mailAddress AND password = :password";
+		SqlParameterSource param = new MapSqlParameterSource()
+				.addValue("mailAddress", mailAddress)
+				.addValue("password", password);
+	
+		List<Employee> employeeList = template.query(sql, param, EMPLOYEE_ROW_MAPPER);
+		return employeeList.isEmpty() ? null : employeeList.get(0);
+	}
+
+	//
 }
