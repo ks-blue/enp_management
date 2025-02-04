@@ -33,6 +33,16 @@ public class EmployeeService {
 	}
 
 	/**
+	 * 名前にキーワードが含まれる従業員情報を取得します (あいまい検索).
+	 * 
+	 * @param keyword 検索キーワード
+	 * @return 検索結果の従業員情報一覧
+	 */
+	public List<Employee> searchByName(String keyword) {
+		return employeeRepository.findByNameContaining(keyword);
+	}
+
+	/**
 	 * 従業員情報を取得します.
 	 * 
 	 * @param id ID
@@ -53,3 +63,4 @@ public class EmployeeService {
 		employeeRepository.update(employee);
 	}
 }
+

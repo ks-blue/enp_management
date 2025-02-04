@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.domain.Employee;
 import com.example.form.UpdateEmployeeForm;
@@ -28,37 +29,48 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/employee")
 public class EmployeeController {
 
-	@Autowired
-	private EmployeeService employeeService;
+    @Autowired
+    private EmployeeService employeeService;
 
-	  @Autowired
+    @Autowired
     private HttpSession session;
 
-	/**
-	 * 使用するフォームオブジェクトをリクエストスコープに格納する.
-	 * 
-	 * @return フォーム
-	 */
-	@ModelAttribute
-	public UpdateEmployeeForm setUpForm() {
-		return new UpdateEmployeeForm();
-	}
+    /**
+     * 使用するフォームオブジェクトをリクエストスコープに格納する.
+     * 
+     * @return フォーム
+     */
+    @ModelAttribute
+    public UpdateEmployeeForm setUpForm() {
+        return new UpdateEmployeeForm();
+    }
 
-	/////////////////////////////////////////////////////
-	// ユースケース：従業員一覧を表示する
-	/////////////////////////////////////////////////////
-	/**
-	 * 従業員一覧画面を出力します.
-	 * 
-	 * @param model モデル
-	 * @return 従業員一覧画面
-	 */
-	@GetMapping("/showList")
-	public String showList(Model model) {
-		List<Employee> employeeList = employeeService.showList();
-		model.addAttribute("employeeList", employeeList);
+    /////////////////////////////////////////////////////
+    // ユースケース：従業員一覧を表示する
+    /////////////////////////////////////////////////////
+    /**
+     * 従業員一覧画面を出力します.
+     * 
+     * @param model モデル
+     * @param keyword 検索ワード（名前）
+     * @return 従業員一覧画面
+     */
+    @GetMapping("/showList")
+    public String showList(@RequestParam(name = "keyword", required = false) String keyword, Model model) {
+        List<Employee> employeeList;
 
-		String administratorName = (String) session.getAttribute("administratorName");
+        if (keyword != null && !keyword.isEmpty()) {
+            // 検索キーワードがある場合、検索結果を取得
+            employeeList = employeeService.searchByName(keyword);
+        } else {
+            // キーワードがない場合、全件取得
+            employeeList = employeeService.showList();
+        }
+
+        model.addAttribute("employeeList", employeeList);
+        model.addAttribute("keyword", keyword); // 入力内容を保持するため
+
+        String administratorName = (String) session.getAttribute("administratorName");
         if (administratorName != null) {
             model.addAttribute("administratorName", administratorName);
         } else {
@@ -66,53 +78,59 @@ public class EmployeeController {
         }
 
         return "employee/list";
-
-		
-	}
-
-	/////////////////////////////////////////////////////
-	// ユースケース：従業員詳細を表示する
-	/////////////////////////////////////////////////////
-	/**
-	 * 従業員詳細画面を出力します.
-	 * 
-	 * @param id    リクエストパラメータで送られてくる従業員ID
-	 * @param model モデル
-	 * @return 従業員詳細画面
-	 */
-	@GetMapping("/showDetail")
-	public String showDetail(String id, Model model) {
-		Employee employee = employeeService.showDetail(Integer.parseInt(id));
-		model.addAttribute("employee", employee);
-		
-		String administratorName = (String) session.getAttribute("administratorName");
-    if (administratorName != null) {
-        model.addAttribute("administratorName", administratorName);
-    } else {
-        model.addAttribute("administratorName", "未ログイン");
     }
-	
-		return "employee/detail";
-	}
 
-	/////////////////////////////////////////////////////
-	// ユースケース：従業員詳細を更新する
-	/////////////////////////////////////////////////////
-	/**
-	 * 従業員詳細(ここでは扶養人数のみ)を更新します.
-	 * 
-	 * @param form 従業員情報用フォーム
-	 * @return 従業員一覧画面へリダクレクト
-	 */
-	@PostMapping("/update")
-	public String update(@Validated UpdateEmployeeForm form, BindingResult result, Model model) {
-		if (result.hasErrors()) {
-			return showDetail(form.getId(), model);
-		}
-		Employee employee = new Employee();
-		employee.setId(form.getIntId());
-		employee.setDependentsCount(form.getIntDependentsCount());
-		employeeService.update(employee);
-		return "redirect:/employee/showList";
-	}
+    /////////////////////////////////////////////////////
+    // ユースケース：従業員詳細を表示する
+    /////////////////////////////////////////////////////
+    /**
+     * 従業員詳細画面を出力します.
+     * 
+     * @param id    リクエストパラメータで送られてくる従業員ID
+     * @param model モデル
+     * @return 従業員詳細画面
+     */
+    @GetMapping("/showDetail")
+    public String showDetail(String id, Model model) {
+        Employee employee = employeeService.showDetail(Integer.parseInt(id));
+        model.addAttribute("employee", employee);
+        
+        String administratorName = (String) session.getAttribute("administratorName");
+        if (administratorName != null) {
+            model.addAttribute("administratorName", administratorName);
+        } else {
+            model.addAttribute("administratorName", "未ログイン");
+        }
+        
+        return "employee/detail";
+    }
+
+    /////////////////////////////////////////////////////
+    // ユースケース：従業員詳細を更新する
+    /////////////////////////////////////////////////////
+    /**
+     * 従業員詳細(ここでは扶養人数のみ)を更新します.
+     * 
+     * @param form 従業員情報用フォーム
+     * @return 従業員一覧画面へリダクレクト
+     */
+    @PostMapping("/update")
+    public String update(@Validated UpdateEmployeeForm form, BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            return showDetail(form.getId(), model);
+        }
+        Employee employee = new Employee();
+        employee.setId(form.getIntId());
+        employee.setDependentsCount(form.getIntDependentsCount());
+        employeeService.update(employee);
+        return "redirect:/employee/showList";
+    }
+
+	@GetMapping("/employee/showList")
+    public String showList(Model model, @RequestParam(value = "keyword", required = false) String keyword) {
+        model.addAttribute("keyword", keyword);  // "keyword"をモデルに追加
+        return "employee/list";  // thymeleafテンプレート名
+    }
+
 }
+

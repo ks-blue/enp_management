@@ -58,6 +58,22 @@ public class EmployeeRepository {
 	}
 
 	/**
+	 * 名前にキーワードが含まれる従業員情報を取得します (あいまい検索).
+	 * 
+	 * @param keyword 検索キーワード
+	 * @return 名前にキーワードが含まれる従業員情報
+	 */
+	public List<Employee> findByNameContaining(String keyword) {
+		String sql = "SELECT id,name,image,gender,hire_date,mail_address,zip_code,address,telephone,salary,characteristics,dependents_count FROM employees WHERE name LIKE :keyword";
+
+		SqlParameterSource param = new MapSqlParameterSource().addValue("keyword", "%" + keyword + "%");
+
+		List<Employee> employees = template.query(sql, param, EMPLOYEE_ROW_MAPPER);
+
+		return employees;
+	}
+
+	/**
 	 * 主キーから従業員情報を取得します.
 	 * 
 	 * @param id 検索したい従業員ID
