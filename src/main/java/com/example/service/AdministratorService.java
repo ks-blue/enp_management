@@ -7,8 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.domain.Administrator;
 import com.example.repository.AdministratorRepository;
 
-import jakarta.servlet.http.HttpSession;
-
 /**
  * 管理者情報を操作するサービス.
  * 
@@ -21,14 +19,6 @@ public class AdministratorService {
 
 	@Autowired
 	private AdministratorRepository administratorRepository;
-
-	//
-
-
-
-
-
-
 
 	/**
 	 * 管理者情報を登録します.

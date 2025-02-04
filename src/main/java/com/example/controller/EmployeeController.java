@@ -31,26 +31,8 @@ public class EmployeeController {
 	@Autowired
 	private EmployeeService employeeService;
 
-	//
-	@Autowired
-private HttpSession session;
-
-@GetMapping("/showList")
-public String showList(Model model) {
-    List<Employee> employeeList = employeeService.showList();
-    model.addAttribute("employeeList", employeeList);
-    
-    Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
-    if (loggedInUser != null) {
-        model.addAttribute("loggedInUserName", loggedInUser.getName());
-    }
-    
-    return "employee/list";
-}
-//
-
-
-
+	  @Autowired
+    private HttpSession session;
 
 	/**
 	 * 使用するフォームオブジェクトをリクエストスコープに格納する.
@@ -75,7 +57,17 @@ public String showList(Model model) {
 	public String showList(Model model) {
 		List<Employee> employeeList = employeeService.showList();
 		model.addAttribute("employeeList", employeeList);
-		return "employee/list";
+
+		String administratorName = (String) session.getAttribute("administratorName");
+        if (administratorName != null) {
+            model.addAttribute("administratorName", administratorName);
+        } else {
+            model.addAttribute("administratorName", "未ログイン");
+        }
+
+        return "employee/list";
+
+		
 	}
 
 	/////////////////////////////////////////////////////
