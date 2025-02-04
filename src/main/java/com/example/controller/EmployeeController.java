@@ -84,6 +84,14 @@ public class EmployeeController {
 	public String showDetail(String id, Model model) {
 		Employee employee = employeeService.showDetail(Integer.parseInt(id));
 		model.addAttribute("employee", employee);
+		
+		String administratorName = (String) session.getAttribute("administratorName");
+    if (administratorName != null) {
+        model.addAttribute("administratorName", administratorName);
+    } else {
+        model.addAttribute("administratorName", "未ログイン");
+    }
+	
 		return "employee/detail";
 	}
 
